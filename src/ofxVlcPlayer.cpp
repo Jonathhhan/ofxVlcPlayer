@@ -72,7 +72,7 @@ void ofxVlcPlayer::draw(float x, float y) {
 
 void ofxVlcPlayer::play() {
     if (isLooping) {
-        libvlc_media_add_option(m, "input-repeat=-1");
+        libvlc_media_add_option(m, "input-repeat=65545");
     }
     else {
         libvlc_media_add_option(m, "input-repeat=0");
