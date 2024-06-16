@@ -4,7 +4,7 @@
 void ofApp::setup() {
     ofSetWindowTitle("ofxVlcPlayerHapExample");
     ofSetFrameRate(30);
-    char const* vlc_argv[] = { "--vout=opengl", "--start-paused" };
+    char const* vlc_argv[] = { "--vout=opengl", "--start-paused", "-vvv" };
     int vlc_argc = sizeof(vlc_argv) / sizeof(*vlc_argv);
     player.load("data/Loop1_All Color.mov", vlc_argc, vlc_argv);
     player.setLoop(true);
