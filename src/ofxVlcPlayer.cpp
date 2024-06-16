@@ -166,7 +166,7 @@ void ofxVlcPlayer::vlcEventStatic(const libvlc_event_t* event, void* data) {
 
 void ofxVlcPlayer::createPlayer() {
     libvlc_video_set_callbacks(mp, lockStatic, unlockStatic, displayStatic, this);
-    libvlc_video_set_format(mp, "RGBA", videoWidth, videoHeight, videoWidth * 4);
+    libvlc_video_set_format(mp, "RV32", videoWidth, videoHeight, videoWidth * 4);
 
     eventManager = libvlc_media_player_event_manager(mp);
     libvlc_event_attach(eventManager, libvlc_MediaPlayerEndReached, vlcEventStatic, this);
