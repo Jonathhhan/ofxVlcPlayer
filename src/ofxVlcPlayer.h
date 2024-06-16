@@ -24,7 +24,6 @@ class ofxVlcPlayer {
 
     int videoWidth, videoHeight;
     bool isLooping;
-    bool isFinished;
 
     // VLC Video callbaks
     static void* lockStatic(void* data, void** p_pixels);
@@ -43,6 +42,7 @@ public:
     ofxVlcPlayer();
     virtual ~ofxVlcPlayer();
     void load(std::string name, int vlc_argc, char const* vlc_argv[]);
+    void createPlayer();
     void update();
     void setTexture(ofTexture tex);
     ofTexture& getTexture();
@@ -51,7 +51,6 @@ public:
     void play();
     void pause();
     void stop();
-    bool isDone() const;
     void setPosition(float pct);
     void setLoop(bool loop);
     bool getLoop() const;

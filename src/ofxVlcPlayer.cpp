@@ -2,7 +2,7 @@
 
 ofxVlcPlayer::ofxVlcPlayer()
     : frontImage(&image[1]), backImage(&image[0]), isLooping(true),
-    isFinished(false), frontTexture(NULL), libvlc(NULL), eventManager(NULL),
+    frontTexture(NULL), libvlc(NULL), eventManager(NULL),
     m(NULL), mp(NULL), videoHeight(0), videoWidth(0) {}
 
 ofxVlcPlayer::~ofxVlcPlayer() {}
@@ -21,10 +21,10 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
     else {
         m = libvlc_media_new_path(libvlc, name.c_str());
     }
-
-    //libvlc_media_add_option(m, ":sout=#duplicate{dst=display,dst=std{access=file,mux=mp4,dst=xyz.mp4}");
-    mp = libvlc_media_player_new_from_media(m);
     libvlc_media_parse(m);
+    // libvlc_media_add_option(m, ":sout=#duplicate{dst=display,dst=std{access=file,mux=mp4,dst=xyz.mp4}");
+
+    mp = libvlc_media_player_new_from_media(m);
     unsigned int x, y;
     if (libvlc_video_get_size(mp, 0, &x, &y) != -1) {
         videoWidth = x;
@@ -37,11 +37,7 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
     std::cout << "Video size: (" << videoWidth << ", " << videoHeight << ")" << std::endl;
     std::cout << "Video length: " << libvlc_media_get_duration(m) << "(ms)" << std::endl;
 
-    libvlc_video_set_callbacks(mp, lockStatic, unlockStatic, displayStatic, this);
-    libvlc_video_set_format(mp, "RGBA", videoWidth, videoHeight, videoWidth * 4);
-
-    eventManager = libvlc_media_player_event_manager(mp);
-    libvlc_event_attach(eventManager, libvlc_MediaPlayerEndReached, vlcEventStatic, this);
+    createPlayer();
 
     for (int i = 0; i < 2; i++) {
         image[i].allocate(videoWidth, videoHeight, OF_IMAGE_COLOR_ALPHA);
@@ -71,13 +67,6 @@ void ofxVlcPlayer::draw(float x, float y) {
 }
 
 void ofxVlcPlayer::play() {
-    if (isLooping) {
-        libvlc_media_add_option(m, "input-repeat=65545");
-    }
-    else {
-        libvlc_media_add_option(m, "input-repeat=0");
-    }
-    isFinished = false;
     libvlc_media_player_play(mp);
 }
 
@@ -86,14 +75,9 @@ void ofxVlcPlayer::pause() {
 }
 
 void ofxVlcPlayer::stop() {
-    libvlc_media_player_stop(mp);
-    isFinished = false;
-    libvlc_media_player_set_time(mp, 0);
-    update();
-}
-
-bool ofxVlcPlayer::isDone() const {
-    return isFinished;
+    libvlc_media_player_release(mp);
+    mp = libvlc_media_player_new_from_media(m);
+    createPlayer();
 }
 
 void ofxVlcPlayer::setPosition(float pct) {
@@ -180,9 +164,24 @@ void ofxVlcPlayer::vlcEventStatic(const libvlc_event_t* event, void* data) {
     ((ofxVlcPlayer*)data)->vlcEvent(event);
 }
 
+void ofxVlcPlayer::createPlayer() {
+    libvlc_video_set_callbacks(mp, lockStatic, unlockStatic, displayStatic, this);
+    libvlc_video_set_format(mp, "RGBA", videoWidth, videoHeight, videoWidth * 4);
+
+    eventManager = libvlc_media_player_event_manager(mp);
+    libvlc_event_attach(eventManager, libvlc_MediaPlayerEndReached, vlcEventStatic, this);
+
+    libvlc_media_player_play(mp);
+    libvlc_media_player_set_time(mp, 0);
+}
+
 void ofxVlcPlayer::vlcEvent(const libvlc_event_t* event) {
     if (event->type == libvlc_MediaPlayerEndReached) {
-        isFinished = true;
+        mp = libvlc_media_player_new_from_media(m);
+        createPlayer();
+        if (isLooping) {
+            play();
+        }
     }
 }
 
@@ -192,6 +191,7 @@ void* ofxVlcPlayer::lock(void** p_pixels) {
 }
 
 void ofxVlcPlayer::unlock(void* id, void* const* p_pixels) {
+
 }
 
 void ofxVlcPlayer::display(void* id) {
