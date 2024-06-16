@@ -18,7 +18,7 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
     ofDrawBitmapString("FPS: " + ofToString(ofGetFrameRate()), 20, 20);
-    ofDrawBitmapString("Second: " + ofToString(player.getPosition() * player.getLength() / 1000), 20, 40);
+    ofDrawBitmapString("Second: " + ofToString(player.getTime() / 1000), 20, 40);
 }
 
 //--------------------------------------------------------------
