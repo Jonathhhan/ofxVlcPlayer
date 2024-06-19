@@ -8,8 +8,6 @@ typedef SSIZE_T ssize_t;
 #include "vlc/vlc.h"
 #include <memory>
 #include <cassert>
-#include <vlc/libvlc_media.h>
-#include <vlc/libvlc_media_player.h>
 
 class ofxVlcPlayer {
     ofImage image[2];
