@@ -172,7 +172,6 @@ void ofxVlcPlayer::createPlayer() {
     eventManager = libvlc_media_player_event_manager(mp);
     libvlc_event_attach(eventManager, libvlc_MediaPlayerEndReached, vlcEventStatic, this);
 
-    libvlc_media_player_play(mp);
     libvlc_media_player_set_time(mp, 0);
 }
 
