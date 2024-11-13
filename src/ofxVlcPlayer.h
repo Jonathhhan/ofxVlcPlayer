@@ -16,12 +16,7 @@ class ofxVlcPlayer {
 
     // VLC Video callbaks
     static void* lockStatic(void* data, void** p_pixels);
-    static void unlockStatic(void* data, void* id, void* const* p_pixels);
-    static void displayStatic(void* data, void* id);
-
     void* lock(void** p_pixels);
-    void unlock(void* id, void* const* p_pixels);
-    void display(void* id);
 
     // VLC Event callbacks
     static void vlcEventStatic(const libvlc_event_t* event, void* data);

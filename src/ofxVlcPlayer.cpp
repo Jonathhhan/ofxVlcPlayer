@@ -35,7 +35,7 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
     std::cout << "Video size: (" << videoWidth << ", " << videoHeight << ")" << std::endl;
     std::cout << "Video length: " << libvlc_media_get_duration(m) << "(ms)" << std::endl;
 
-    libvlc_video_set_callbacks(mp, lockStatic, unlockStatic, displayStatic, this);
+    libvlc_video_set_callbacks(mp, lockStatic, NULL, NULL, NULL);
     libvlc_video_set_format(mp, "RGBA", videoWidth, videoHeight, videoWidth * 4);
     // libvlc_video_set_format(mp, "RV32", videoWidth, videoHeight, videoWidth * 4); // for HAP transparency
 
@@ -148,14 +148,6 @@ void* ofxVlcPlayer::lockStatic(void* data, void** p_pixels) {
     return ((ofxVlcPlayer*)data)->lock(p_pixels);
 }
 
-void ofxVlcPlayer::unlockStatic(void* data, void* id, void* const* p_pixels) {
-    ((ofxVlcPlayer*)data)->unlock(id, p_pixels);
-}
-
-void ofxVlcPlayer::displayStatic(void* data, void* id) {
-    ((ofxVlcPlayer*)data)->display(id);
-}
-
 void ofxVlcPlayer::vlcEventStatic(const libvlc_event_t* event, void* data) {
     ((ofxVlcPlayer*)data)->vlcEvent(event);
 }
@@ -172,12 +164,4 @@ void ofxVlcPlayer::vlcEvent(const libvlc_event_t* event) {
 void* ofxVlcPlayer::lock(void** p_pixels) {
     *p_pixels = image.getPixels().getData();
     return NULL;
-}
-
-void ofxVlcPlayer::unlock(void* id, void* const* p_pixels) {
-
-}
-
-void ofxVlcPlayer::display(void* id) {
-
 }
