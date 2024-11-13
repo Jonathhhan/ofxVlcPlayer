@@ -157,7 +157,6 @@ void ofxVlcPlayer::vlcEvent(const libvlc_event_t* event) {
     if (event->type == libvlc_MediaPlayerEndReached) {
         if (isLooping) {
             setTime(0);
-            play();
         }
     }
 }
