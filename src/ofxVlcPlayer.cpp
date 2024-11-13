@@ -35,7 +35,7 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
     std::cout << "Video size: (" << videoWidth << ", " << videoHeight << ")" << std::endl;
     std::cout << "Video length: " << libvlc_media_get_duration(m) << "(ms)" << std::endl;
 
-    libvlc_video_set_callbacks(mp, lockStatic, NULL, NULL, NULL);
+    libvlc_video_set_callbacks(mp, lockStatic, NULL, NULL, this);
     libvlc_video_set_format(mp, "RGBA", videoWidth, videoHeight, videoWidth * 4);
     // libvlc_video_set_format(mp, "RV32", videoWidth, videoHeight, videoWidth * 4); // for HAP transparency
 
