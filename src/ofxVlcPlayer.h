@@ -1,17 +1,10 @@
 #pragma once
 
 #include "ofMain.h"
-#ifdef WIN32
-#define LIBVLC_USE_PTHREAD_CANCEL
-typedef SSIZE_T ssize_t;
-#endif
 #include "vlc/vlc.h"
 
 class ofxVlcPlayer {
-    ofImage image[2];
-    ofImage* frontImage;
-    ofImage* backImage;
-    ofTexture* frontTexture;
+    ofImage image;
 
     libvlc_instance_t* libvlc;
     libvlc_media_t* m;
@@ -38,9 +31,7 @@ public:
     ofxVlcPlayer();
     virtual ~ofxVlcPlayer();
     void load(std::string name, int vlc_argc, char const* vlc_argv[]);
-    void createPlayer();
     void update();
-    void setTexture(ofTexture tex);
     ofTexture& getTexture();
     void draw(float x, float y, float w, float h);
     void draw(float x, float y);
