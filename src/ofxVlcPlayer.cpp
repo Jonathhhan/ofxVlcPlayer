@@ -156,7 +156,12 @@ void ofxVlcPlayer::vlcEventStatic(const libvlc_event_t* event, void* data) {
 void ofxVlcPlayer::vlcEvent(const libvlc_event_t* event) {
     if (event->type == libvlc_MediaPlayerEndReached) {
         if (isLooping) {
-            setTime(0);
+            mp = libvlc_media_player_new_from_media(m);
+            libvlc_video_set_callbacks(mp, lockStatic, NULL, NULL, this);
+            libvlc_video_set_format(mp, "RGBA", videoWidth, videoHeight, videoWidth * 4);
+            eventManager = libvlc_media_player_event_manager(mp);
+            libvlc_event_attach(eventManager, libvlc_MediaPlayerEndReached, vlcEventStatic, this);
+            play();
         }
     }
 }
