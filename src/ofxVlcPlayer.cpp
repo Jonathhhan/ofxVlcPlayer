@@ -60,7 +60,7 @@ void ofxVlcPlayer::draw(float x, float y, float w, float h) {
 }
 
 void ofxVlcPlayer::draw(float x, float y) {
-    getTexture().draw(x, y);
+    image.draw(x, y);
 }
 
 void ofxVlcPlayer::play() {
