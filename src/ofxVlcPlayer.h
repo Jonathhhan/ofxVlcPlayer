@@ -43,11 +43,7 @@ public:
     float getPosition();
     int getTime();
     void setTime(int ms);
-    float getFps();
     float getLength();
-    void setFrame(int frame);
-    int getCurrentFrame();
-    int getTotalNumFrames();
     void setVolume(int volume);
     void toggleMute();
 };

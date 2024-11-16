@@ -1,5 +1,5 @@
 #include "ofxVlcPlayer.h"
-
+ 
 ofxVlcPlayer::ofxVlcPlayer()
     : isLooping(true), libvlc(NULL), eventManager(NULL),
     m(NULL), mp(NULL), videoHeight(0), videoWidth(0) {}
@@ -7,6 +7,7 @@ ofxVlcPlayer::ofxVlcPlayer()
 ofxVlcPlayer::~ofxVlcPlayer() {}
 
 void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) {
+
     libvlc = libvlc_new(vlc_argc, vlc_argv);
     if (!libvlc) {
         const char* error = libvlc_errmsg();
@@ -15,13 +16,15 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
     }
 
     if (ofStringTimesInString(name, "://") == 1) {
-        m = libvlc_media_new_location(libvlc, name.c_str());
+        m = libvlc_media_new_location(name.c_str());
     }
     else {
-        m = libvlc_media_new_path(libvlc, name.c_str());
+        m = libvlc_media_new_path(name.c_str());
     }
 
-    mp = libvlc_media_player_new_from_media(m);
+    mp = libvlc_media_player_new_from_media(libvlc, m);
+    // libvlc_media_player_set_media(mp,m);
+    // libvlc_media_add_option(m, ":play-and-stop");
 
     unsigned int x, y;
     if (libvlc_video_get_size(mp, 0, &x, &y) != -1) {
@@ -32,8 +35,9 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
         videoWidth = 1280;
         videoHeight = 720;
     }
+    std::cout << m << std::endl;
     std::cout << "Video size: (" << videoWidth << ", " << videoHeight << ")" << std::endl;
-    std::cout << "Video length: " << libvlc_media_get_duration(m) << "(ms)" << std::endl;
+    std::cout << "Video length: " << name << "(ms)" << std::endl;
 
     libvlc_video_set_callbacks(mp, lockStatic, NULL, NULL, this);
     libvlc_video_set_format(mp, "RGBA", videoWidth, videoHeight, videoWidth * 4);
@@ -41,12 +45,9 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
     // libvlc_media_player_set_hwnd(mp, ofGetWin32Window());
 
     eventManager = libvlc_media_player_event_manager(mp);
-    libvlc_event_attach(eventManager, libvlc_MediaPlayerEndReached, vlcEventStatic, this);
+    libvlc_event_attach(eventManager, libvlc_MediaPlayerStopping, vlcEventStatic, this);
 
     image.allocate(videoWidth, videoHeight, OF_IMAGE_COLOR_ALPHA);
-
-    libvlc_media_player_play(mp);
-    libvlc_media_player_set_time(mp, 0);
 }
 
 void ofxVlcPlayer::update() {
@@ -74,11 +75,11 @@ void ofxVlcPlayer::pause() {
 }
 
 void ofxVlcPlayer::stop() {
-    libvlc_media_player_stop(mp);
+    libvlc_media_player_stop_async(mp);
 }
 
 void ofxVlcPlayer::setPosition(float pct) {
-    libvlc_media_player_set_position(mp, pct);
+    libvlc_media_player_set_position(mp, pct, true);
 }
 
 void ofxVlcPlayer::setLoop(bool loop) {
@@ -114,23 +115,7 @@ int ofxVlcPlayer::getTime() {
 }
 
 void ofxVlcPlayer::setTime(int ms) {
-    libvlc_media_player_set_time(mp, ms);
-}
-
-float ofxVlcPlayer::getFps() {
-    return libvlc_media_player_get_fps(mp);
-}
-
-void ofxVlcPlayer::setFrame(int frame) {
-    libvlc_media_player_set_time(mp, 1000 * frame / libvlc_media_player_get_fps(mp));
-}
-
-int ofxVlcPlayer::getCurrentFrame() {
-    return libvlc_media_player_get_fps(mp) * libvlc_media_player_get_time(mp) / 1000;
-}
-
-int ofxVlcPlayer::getTotalNumFrames() {
-    return libvlc_media_player_get_fps(mp) * libvlc_media_player_get_length(mp) / 1000;
+    libvlc_media_player_set_time(mp, ms, true);
 }
 
 float ofxVlcPlayer::getLength() {
@@ -154,19 +139,20 @@ void ofxVlcPlayer::vlcEventStatic(const libvlc_event_t* event, void* data) {
 }
 
 void ofxVlcPlayer::vlcEvent(const libvlc_event_t* event) {
-    if (event->type == libvlc_MediaPlayerEndReached) {
+    if (event->type == libvlc_MediaPlayerStopping) {
         if (isLooping) {
-            mp = libvlc_media_player_new_from_media(m);
+            mp = libvlc_media_player_new_from_media(libvlc, m);
             libvlc_video_set_callbacks(mp, lockStatic, NULL, NULL, this);
             libvlc_video_set_format(mp, "RGBA", videoWidth, videoHeight, videoWidth * 4);
             eventManager = libvlc_media_player_event_manager(mp);
-            libvlc_event_attach(eventManager, libvlc_MediaPlayerEndReached, vlcEventStatic, this);
+            libvlc_event_attach(eventManager, libvlc_MediaPlayerStopping, vlcEventStatic, this);
             play();
         }
     }
 }
 
 void* ofxVlcPlayer::lock(void** p_pixels) {
+    std::cout << "Video length: " << libvlc_media_get_duration(m) << "(ms)" << std::endl;
     *p_pixels = image.getPixels().getData();
     return NULL;
 }
