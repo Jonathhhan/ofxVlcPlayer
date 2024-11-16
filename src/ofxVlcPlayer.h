@@ -36,8 +36,8 @@ public:
     void setPosition(float pct);
     void setLoop(bool loop);
     bool getLoop() const;
-    float getHeight() const;
     float getWidth() const;
+    float getHeight() const;
     bool isPlaying();
     bool isSeekable();
     float getPosition();

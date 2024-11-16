@@ -22,10 +22,8 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
         m = libvlc_media_new_path(name.c_str());
     }
 
+    libvlc_media_parse_request(libvlc, m, libvlc_media_parse_local, 0);
     mp = libvlc_media_player_new_from_media(libvlc, m);
-    // libvlc_media_player_set_media(mp,m);
-    // libvlc_media_add_option(m, ":play-and-stop");
-
     unsigned int x, y;
     if (libvlc_video_get_size(mp, 0, &x, &y) != -1) {
         videoWidth = x;
@@ -35,9 +33,8 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
         videoWidth = 1280;
         videoHeight = 720;
     }
-    std::cout << m << std::endl;
     std::cout << "Video size: (" << videoWidth << ", " << videoHeight << ")" << std::endl;
-    std::cout << "Video length: " << name << "(ms)" << std::endl;
+    std::cout << "Video length: " << libvlc_media_get_duration(m) << " ms" << std::endl;
 
     libvlc_video_set_callbacks(mp, lockStatic, NULL, NULL, this);
     libvlc_video_set_format(mp, "RGBA", videoWidth, videoHeight, videoWidth * 4);
@@ -90,12 +87,12 @@ bool ofxVlcPlayer::getLoop() const {
     return isLooping;
 }
 
-float ofxVlcPlayer::getHeight() const {
-    return videoHeight;
-}
-
 float ofxVlcPlayer::getWidth() const {
     return videoWidth;
+}
+
+float ofxVlcPlayer::getHeight() const {
+    return videoHeight;
 }
 
 bool ofxVlcPlayer::isPlaying() {
@@ -152,7 +149,6 @@ void ofxVlcPlayer::vlcEvent(const libvlc_event_t* event) {
 }
 
 void* ofxVlcPlayer::lock(void** p_pixels) {
-    std::cout << "Video length: " << libvlc_media_get_duration(m) << "(ms)" << std::endl;
     *p_pixels = image.getPixels().getData();
     return NULL;
 }
