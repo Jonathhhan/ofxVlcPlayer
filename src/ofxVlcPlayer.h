@@ -11,8 +11,8 @@ class ofxVlcPlayer {
 
     ofImage image;
     shared_ptr<ofAppBaseWindow> vlcWindow;
-    unsigned videoWidth = 0;
-    unsigned videoHeight = 0;
+    unsigned videoWidth;
+    unsigned videoHeight;
     bool updated = false;
     bool isLooping = false;
     std::mutex texLock;
