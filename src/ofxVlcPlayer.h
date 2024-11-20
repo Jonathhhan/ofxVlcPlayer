@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
-#include "../libs/libvlc/include/vlc.h"
+#include "vlc/vlc.h"
 
 class ofxVlcPlayer {
     libvlc_instance_t* libvlc;
