@@ -4,19 +4,31 @@
 #include "vlc/vlc.h"
 
 class ofxVlcPlayer {
-    ofImage image;
-
     libvlc_instance_t* libvlc;
-    libvlc_media_t* m;
-    libvlc_media_player_t* mp;
+    libvlc_media_t* media;
+    libvlc_media_player_t* mediaPlayer;
     libvlc_event_manager_t* eventManager;
 
-    int videoWidth, videoHeight;
-    bool isLooping;
+    ofImage image;
+    shared_ptr<ofAppBaseWindow> vlcWindow;
+    unsigned videoWidth = 0;
+    unsigned videoHeight = 0;
+    bool updated = false;
+    bool isLooping = false;
+    std::mutex texLock;
+    GLuint tex[3];
+    GLuint fbo[3];
+    size_t idxRender = 0;
+    size_t idxSwap = 1;
+    size_t idxDisplay = 2;
 
     // VLC Video callbaks
-    static void* lockStatic(void* data, void** p_pixels);
-    void* lock(void** p_pixels);
+    static bool setup(void** data, const libvlc_video_setup_device_cfg_t* cfg, libvlc_video_setup_device_info_t* out);
+    static void cleanup(void* data);
+    static bool resize(void* data, const libvlc_video_render_cfg_t* cfg, libvlc_video_output_cfg_t* render_cfg);
+    static void swap(void* data);
+    static bool make_current(void* data, bool current);
+    static void* get_proc_address(void* data, const char* current);
 
     // VLC Event callbacks
     static void vlcEventStatic(const libvlc_event_t* event, void* data);
@@ -36,8 +48,8 @@ public:
     void setPosition(float pct);
     void setLoop(bool loop);
     bool getLoop() const;
-    float getWidth() const;
     float getHeight() const;
+    float getWidth() const;
     bool isPlaying();
     bool isSeekable();
     float getPosition();

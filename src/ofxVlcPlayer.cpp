@@ -1,13 +1,20 @@
 #include "ofxVlcPlayer.h"
- 
+#include <GLFW/glfw3.h>
+
 ofxVlcPlayer::ofxVlcPlayer()
-    : isLooping(true), libvlc(NULL), eventManager(NULL),
-    m(NULL), mp(NULL), videoHeight(0), videoWidth(0) {}
+    : isLooping(true), libvlc(NULL), eventManager(NULL), media(NULL), mediaPlayer(NULL), videoHeight(0), videoWidth(0), tex(), fbo() {
+    ofGLFWWindowSettings settings;
+    settings.visible = true;
+    settings.shareContextWith = ofGetCurrentWindow();
+    vlcWindow = std::make_shared<ofAppGLFWWindow>();
+    vlcWindow->setup(settings);
+    vlcWindow->setVerticalSync(true);
+    image.allocate(1, 1, OF_IMAGE_COLOR_ALPHA);
+    }
 
 ofxVlcPlayer::~ofxVlcPlayer() {}
 
 void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) {
-
     libvlc = libvlc_new(vlc_argc, vlc_argv);
     if (!libvlc) {
         const char* error = libvlc_errmsg();
@@ -16,35 +23,117 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
     }
 
     if (ofStringTimesInString(name, "://") == 1) {
-        m = libvlc_media_new_location(name.c_str());
+        media = libvlc_media_new_location(name.c_str());
     }
     else {
-        m = libvlc_media_new_path(name.c_str());
+        media = libvlc_media_new_path(name.c_str());
     }
 
-    libvlc_media_parse_request(libvlc, m, libvlc_media_parse_local, 0);
-    mp = libvlc_media_player_new_from_media(libvlc, m);
-    unsigned int x, y;
-    if (libvlc_video_get_size(mp, 0, &x, &y) != -1) {
-        videoWidth = x;
-        videoHeight = y;
-    }
-    else {
-        videoWidth = 1280;
-        videoHeight = 720;
-    }
-    std::cout << "Video size: " << videoWidth << " * " << videoHeight << std::endl;
-    std::cout << "Video length: " << libvlc_media_get_duration(m) << " ms" << std::endl;
+    mediaPlayer = libvlc_media_player_new_from_media(libvlc, media);
 
-    libvlc_video_set_callbacks(mp, lockStatic, NULL, NULL, this);
-    libvlc_video_set_format(mp, "RGBA", videoWidth, videoHeight, videoWidth * 4);
+    // Define the opengl rendering callbacks
+    libvlc_video_set_output_callbacks(mediaPlayer, libvlc_video_engine_opengl, setup, cleanup, nullptr, resize, swap, make_current, get_proc_address, nullptr, nullptr, this);
+
+    libvlc_video_set_format(mediaPlayer, "RGBA", videoWidth, videoHeight, videoWidth * 4);
     // libvlc_video_set_format(mp, "RV32", videoWidth, videoHeight, videoWidth * 4); // for HAP transparency
-    // libvlc_media_player_set_hwnd(mp, ofGetWin32Window());
 
-    eventManager = libvlc_media_player_event_manager(mp);
+    eventManager = libvlc_media_player_event_manager(mediaPlayer);
     libvlc_event_attach(eventManager, libvlc_MediaPlayerStopping, vlcEventStatic, this);
+}
 
-    image.allocate(videoWidth, videoHeight, OF_IMAGE_COLOR_ALPHA);
+// This callback is called during initialisation
+bool ofxVlcPlayer::setup(void** data, const libvlc_video_setup_device_cfg_t* cfg, libvlc_video_setup_device_info_t* out) {
+    ofxVlcPlayer* that = static_cast<ofxVlcPlayer*>(*data);
+    that->videoWidth = 0;
+    that->videoHeight = 0;
+    return true;
+}
+
+// This callback is called to release the texture and FBO created in resize
+void ofxVlcPlayer::cleanup(void* data) {
+    ofxVlcPlayer* that = static_cast<ofxVlcPlayer*>(data);
+    if (that->videoWidth == 0 && that->videoHeight == 0)
+        return;
+
+    glDeleteTextures(3, that->tex);
+    glDeleteFramebuffers(3, that->fbo);
+}
+
+// this callback will create the surfaces and FBO used by VLC to perform its rendering
+bool ofxVlcPlayer::resize(void* data, const libvlc_video_render_cfg_t* cfg, libvlc_video_output_cfg_t* render_cfg) {
+    ofxVlcPlayer* that = static_cast<ofxVlcPlayer*>(data);
+    if (cfg->width != that->videoWidth || cfg->height != that->videoHeight)
+        cleanup(data);
+
+    glGenTextures(3, that->tex);
+    glGenFramebuffers(3, that->fbo);
+
+    for (int i = 0; i < 3; i++) {
+        glBindTexture(GL_TEXTURE_2D, that->tex[i]);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cfg->width, cfg->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        glBindFramebuffer(GL_FRAMEBUFFER, that->fbo[i]);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, that->tex[i], 0);
+    }
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+    if (status != GL_FRAMEBUFFER_COMPLETE) {
+        return false;
+    }
+
+    that->videoWidth = cfg->width;
+    that->videoHeight = cfg->height;
+
+    that->image.allocate(that->videoWidth, that->videoHeight, OF_IMAGE_COLOR_ALPHA);
+    that->image.getTexture().getTextureData().bFlipTexture = true;
+    that->image.getTexture().setUseExternalTextureID(that->tex[0]);
+    std::cout << "Video size: " << that->videoWidth << " * " << that->videoHeight << std::endl;
+    std::cout << "Video length: " << libvlc_media_get_duration(that->media) << " ms" << std::endl;
+
+    glBindFramebuffer(GL_FRAMEBUFFER, that->fbo[that->idxRender]);
+
+    render_cfg->opengl_format = GL_RGBA;
+    render_cfg->full_range = true;
+    render_cfg->colorspace = libvlc_video_colorspace_BT709;
+    render_cfg->primaries = libvlc_video_primaries_BT709;
+    render_cfg->transfer = libvlc_video_transfer_func_SRGB;
+    render_cfg->orientation = libvlc_video_orient_top_left;
+
+    return true;
+}
+
+// This callback is called after VLC performs drawing calls
+void ofxVlcPlayer::swap(void* data) {
+    ofxVlcPlayer* that = static_cast<ofxVlcPlayer*>(data);
+    std::lock_guard<std::mutex> lock(that->texLock);
+    that->updated = true;
+    std::swap(that->idxSwap, that->idxRender);
+    glBindFramebuffer(GL_FRAMEBUFFER, that->fbo[that->idxRender]);
+}
+
+// This callback is called to set the OpenGL context
+bool ofxVlcPlayer::make_current(void* data, bool current) {
+    ofxVlcPlayer* that = static_cast<ofxVlcPlayer*>(data);
+    if (current) {
+        ofAppGLFWWindow* win = dynamic_cast<ofAppGLFWWindow*>(that->vlcWindow.get());
+        glfwMakeContextCurrent(win->getGLFWWindow());
+        return true;
+    } else {
+        glfwMakeContextCurrent(NULL);
+        return false;
+    }
+}
+
+// This callback is called by VLC to get OpenGL functions
+void* ofxVlcPlayer::get_proc_address(void* data, const char* current) {
+    // std::cout << current << std::endl;
+    return glfwGetProcAddress(current);
 }
 
 void ofxVlcPlayer::update() {
@@ -60,23 +149,23 @@ void ofxVlcPlayer::draw(float x, float y, float w, float h) {
 }
 
 void ofxVlcPlayer::draw(float x, float y) {
-    image.draw(x, y);
+    getTexture().draw(x, y);
 }
 
 void ofxVlcPlayer::play() {
-    libvlc_media_player_play(mp);
+    libvlc_media_player_play(mediaPlayer);
 }
 
 void ofxVlcPlayer::pause() {
-    libvlc_media_player_pause(mp);
+    libvlc_media_player_pause(mediaPlayer);
 }
 
 void ofxVlcPlayer::stop() {
-    libvlc_media_player_stop_async(mp);
+    libvlc_media_player_stop_async(mediaPlayer);
 }
 
 void ofxVlcPlayer::setPosition(float pct) {
-    libvlc_media_player_set_position(mp, pct, true);
+    libvlc_media_player_set_position(mediaPlayer, pct, true);
 }
 
 void ofxVlcPlayer::setLoop(bool loop) {
@@ -87,48 +176,44 @@ bool ofxVlcPlayer::getLoop() const {
     return isLooping;
 }
 
-float ofxVlcPlayer::getWidth() const {
-    return videoWidth;
-}
-
 float ofxVlcPlayer::getHeight() const {
     return videoHeight;
 }
 
+float ofxVlcPlayer::getWidth() const {
+    return videoWidth;
+}
+
 bool ofxVlcPlayer::isPlaying() {
-    return libvlc_media_player_is_playing(mp);
+    return libvlc_media_player_is_playing(mediaPlayer);
 }
 
 bool ofxVlcPlayer::isSeekable() {
-    return libvlc_media_player_is_seekable(mp);
+    return libvlc_media_player_is_seekable(mediaPlayer);
 }
 
 float ofxVlcPlayer::getPosition() {
-    return libvlc_media_player_get_position(mp);
+    return libvlc_media_player_get_position(mediaPlayer);
 }
 
 int ofxVlcPlayer::getTime() {
-    return libvlc_media_player_get_time(mp);
+    return libvlc_media_player_get_time(mediaPlayer);
 }
 
 void ofxVlcPlayer::setTime(int ms) {
-    libvlc_media_player_set_time(mp, ms, true);
+    libvlc_media_player_set_time(mediaPlayer, ms, true);
 }
 
 float ofxVlcPlayer::getLength() {
-    return libvlc_media_player_get_length(mp);
+    return libvlc_media_player_get_length(mediaPlayer);
 }
 
 void ofxVlcPlayer::setVolume(int volume) {
-    libvlc_audio_set_volume(mp, volume);
+    libvlc_audio_set_volume(mediaPlayer, volume);
 }
 
 void ofxVlcPlayer::toggleMute() {
-    libvlc_audio_toggle_mute(mp);
-}
-
-void* ofxVlcPlayer::lockStatic(void* data, void** p_pixels) {
-    return ((ofxVlcPlayer*)data)->lock(p_pixels);
+    libvlc_audio_toggle_mute(mediaPlayer);
 }
 
 void ofxVlcPlayer::vlcEventStatic(const libvlc_event_t* event, void* data) {
@@ -138,17 +223,6 @@ void ofxVlcPlayer::vlcEventStatic(const libvlc_event_t* event, void* data) {
 void ofxVlcPlayer::vlcEvent(const libvlc_event_t* event) {
     if (event->type == libvlc_MediaPlayerStopping) {
         if (isLooping) {
-            mp = libvlc_media_player_new_from_media(libvlc, m);
-            libvlc_video_set_callbacks(mp, lockStatic, NULL, NULL, this);
-            libvlc_video_set_format(mp, "RGBA", videoWidth, videoHeight, videoWidth * 4);
-            eventManager = libvlc_media_player_event_manager(mp);
-            libvlc_event_attach(eventManager, libvlc_MediaPlayerStopping, vlcEventStatic, this);
-            play();
         }
     }
-}
-
-void* ofxVlcPlayer::lock(void** p_pixels) {
-    *p_pixels = image.getPixels().getData();
-    return NULL;
 }
