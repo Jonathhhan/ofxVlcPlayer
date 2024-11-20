@@ -1,8 +1,7 @@
 #include "ofxVlcPlayer.h"
 #include <GLFW/glfw3.h>
 
-ofxVlcPlayer::ofxVlcPlayer()
-    : isLooping(true), libvlc(NULL), eventManager(NULL), media(NULL), mediaPlayer(NULL), videoHeight(0), videoWidth(0), tex(), fbo() {
+ofxVlcPlayer::ofxVlcPlayer() {
     ofGLFWWindowSettings settings;
     settings.visible = true;
     settings.shareContextWith = ofGetCurrentWindow();
@@ -10,7 +9,7 @@ ofxVlcPlayer::ofxVlcPlayer()
     vlcWindow->setup(settings);
     vlcWindow->setVerticalSync(true);
     image.allocate(1, 1, OF_IMAGE_COLOR_ALPHA);
-    }
+}
 
 ofxVlcPlayer::~ofxVlcPlayer() {}
 
