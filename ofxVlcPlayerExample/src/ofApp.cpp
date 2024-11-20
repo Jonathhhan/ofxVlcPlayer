@@ -19,7 +19,7 @@ void ofApp::update() {
 //--------------------------------------------------------------
 void ofApp::draw() {
     ofSetColor(255);
-    player.getTexture().draw(0, 0);
+    player.draw(0, 0);
     ofSetColor(0, 255, 0);
     ofDrawBitmapString("FPS: " + ofToString(ofGetFrameRate()), 20, 20);
     ofDrawBitmapString("Second: " + ofToString(player.getTime() / 1000), 20, 40);
