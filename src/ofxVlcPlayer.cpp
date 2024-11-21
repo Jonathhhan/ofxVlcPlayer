@@ -33,9 +33,6 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
     // Define the opengl rendering callbacks
     libvlc_video_set_output_callbacks(mediaPlayer, libvlc_video_engine_opengl, setup, cleanup, nullptr, resize, swap, make_current, get_proc_address, nullptr, nullptr, this);
 
-    libvlc_video_set_format(mediaPlayer, "RGBA", videoWidth, videoHeight, videoWidth * 4);
-    // libvlc_video_set_format(mp, "RV32", videoWidth, videoHeight, videoWidth * 4); // for HAP transparency
-
     eventManager = libvlc_media_player_event_manager(mediaPlayer);
     libvlc_event_attach(eventManager, libvlc_MediaPlayerStopping, vlcEventStatic, this);
 }
