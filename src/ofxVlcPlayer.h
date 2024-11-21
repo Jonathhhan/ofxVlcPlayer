@@ -38,6 +38,7 @@ public:
     ofxVlcPlayer();
     virtual ~ofxVlcPlayer();
     void load(std::string name, int vlc_argc, char const* vlc_argv[]);
+    void update();
     ofTexture& getTexture();
     void draw(float x, float y, float w, float h);
     void draw(float x, float y);

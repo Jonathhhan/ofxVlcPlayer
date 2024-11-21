@@ -88,7 +88,7 @@ bool ofxVlcPlayer::resize(void* data, const libvlc_video_render_cfg_t* cfg, libv
 
     that->texture.allocate(that->videoWidth, that->videoHeight, GL_RGBA);
     that->texture.getTextureData().bFlipTexture = true;
-    that->texture.setUseExternalTextureID(that->tex[1]);
+    
     std::cout << "Video size: " << that->videoWidth << " * " << that->videoHeight << std::endl;
     std::cout << "Video length: " << libvlc_media_get_duration(that->media) << " ms" << std::endl;
 
@@ -130,6 +130,14 @@ bool ofxVlcPlayer::make_current(void* data, bool current) {
 void* ofxVlcPlayer::get_proc_address(void* data, const char* current) {
     // std::cout << current << std::endl;
     return glfwGetProcAddress(current);
+}
+
+void ofxVlcPlayer::update() {
+    if (updated) {
+        std::swap(idxSwap, idxDisplay);
+        updated = false;
+    }
+    texture.setUseExternalTextureID(tex[idxDisplay]);
 }
 
 ofTexture& ofxVlcPlayer::getTexture() {
