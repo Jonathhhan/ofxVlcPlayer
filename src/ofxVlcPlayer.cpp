@@ -4,9 +4,6 @@
 ofxVlcPlayer::ofxVlcPlayer()
     : libvlc(NULL), eventManager(NULL), media(NULL), mediaPlayer(NULL), videoHeight(0), videoWidth(0), tex(), fbo() {
     ofGLFWWindowSettings settings;
-    settings.visible = true;
-    settings.shareContextWith = ofGetCurrentWindow();
-    vlcWindow = std::make_shared<ofAppGLFWWindow>();
     vlcWindow->setup(settings);
     vlcWindow->setVerticalSync(true);
     texture.allocate(1, 1, GL_RGBA);
