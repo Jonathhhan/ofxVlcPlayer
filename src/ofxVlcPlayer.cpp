@@ -88,7 +88,7 @@ bool ofxVlcPlayer::resize(void* data, const libvlc_video_render_cfg_t* cfg, libv
 
     that->texture.allocate(that->videoWidth, that->videoHeight, GL_RGBA);
     that->texture.getTextureData().bFlipTexture = true;
-    that->texture.setUseExternalTextureID(that->tex[0]);
+    that->texture.setUseExternalTextureID(that->tex[1]);
     std::cout << "Video size: " << that->videoWidth << " * " << that->videoHeight << std::endl;
     std::cout << "Video length: " << libvlc_media_get_duration(that->media) << " ms" << std::endl;
 
