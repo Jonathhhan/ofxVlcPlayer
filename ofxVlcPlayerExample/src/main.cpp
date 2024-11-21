@@ -6,7 +6,6 @@ int main() {
 	ofGLFWWindowSettings settings;
 	settings.setSize(1280, 720);
 	auto mainWindow = ofCreateWindow(settings);
-	auto app = std::make_shared<ofApp>();
-	ofRunApp(mainWindow, app);
+	ofRunApp(mainWindow, make_shared<ofApp>());
 	ofRunMainLoop();
 }
