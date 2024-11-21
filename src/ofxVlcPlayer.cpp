@@ -1,7 +1,8 @@
 #include "ofxVlcPlayer.h"
 #include <GLFW/glfw3.h>
 
-ofxVlcPlayer::ofxVlcPlayer() {
+ofxVlcPlayer::ofxVlcPlayer()
+    : libvlc(NULL), eventManager(NULL), media(NULL), mediaPlayer(NULL), videoHeight(0), videoWidth(0), tex(), fbo() {
     ofGLFWWindowSettings settings;
     settings.visible = true;
     settings.shareContextWith = ofGetCurrentWindow();
