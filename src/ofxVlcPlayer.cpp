@@ -9,7 +9,7 @@ ofxVlcPlayer::ofxVlcPlayer()
     vlcWindow = std::make_shared<ofAppGLFWWindow>();
     vlcWindow->setup(settings);
     vlcWindow->setVerticalSync(true);
-    image.allocate(1, 1, OF_IMAGE_COLOR_ALPHA);
+    texture.allocate(1, 1, GL_RGBA);
 }
 
 ofxVlcPlayer::~ofxVlcPlayer() {}
@@ -90,9 +90,9 @@ bool ofxVlcPlayer::resize(void* data, const libvlc_video_render_cfg_t* cfg, libv
     that->videoWidth = cfg->width;
     that->videoHeight = cfg->height;
 
-    that->image.allocate(that->videoWidth, that->videoHeight, OF_IMAGE_COLOR_ALPHA);
-    that->image.getTexture().getTextureData().bFlipTexture = true;
-    that->image.getTexture().setUseExternalTextureID(that->tex[0]);
+    that->texture.allocate(that->videoWidth, that->videoHeight, GL_RGBA);
+    that->texture.getTextureData().bFlipTexture = true;
+    that->texture.setUseExternalTextureID(that->tex[0]);
     std::cout << "Video size: " << that->videoWidth << " * " << that->videoHeight << std::endl;
     std::cout << "Video length: " << libvlc_media_get_duration(that->media) << " ms" << std::endl;
 
@@ -136,20 +136,16 @@ void* ofxVlcPlayer::get_proc_address(void* data, const char* current) {
     return glfwGetProcAddress(current);
 }
 
-void ofxVlcPlayer::update() {
-    image.update();
-}
-
 ofTexture& ofxVlcPlayer::getTexture() {
-    return image.getTexture();
+    return texture;
 }
 
 void ofxVlcPlayer::draw(float x, float y, float w, float h) {
-    image.draw(x, y, w, h);
+    texture.draw(x, y, w, h);
 }
 
 void ofxVlcPlayer::draw(float x, float y) {
-    getTexture().draw(x, y);
+    texture.draw(x, y);
 }
 
 void ofxVlcPlayer::play() {
