@@ -63,7 +63,6 @@ bool ofxVlcPlayer::resize(void* data, const libvlc_video_render_cfg_t* cfg, libv
 
     glGenTextures(3, that->tex);
     glGenFramebuffers(3, that->fbo);
-
     for (int i = 0; i < 3; i++) {
         glBindTexture(GL_TEXTURE_2D, that->tex[i]);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cfg->width, cfg->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -71,27 +70,14 @@ bool ofxVlcPlayer::resize(void* data, const libvlc_video_render_cfg_t* cfg, libv
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
         glBindFramebuffer(GL_FRAMEBUFFER, that->fbo[i]);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, that->tex[i], 0);
     }
     glBindTexture(GL_TEXTURE_2D, 0);
-
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         return false;
     }
-
-    that->videoWidth = cfg->width;
-    that->videoHeight = cfg->height;
-
-    that->texture.allocate(that->videoWidth, that->videoHeight, GL_RGBA);
-    that->texture.getTextureData().bFlipTexture = true;
-    
-    std::cout << "Video size: " << that->videoWidth << " * " << that->videoHeight << std::endl;
-    std::cout << "Video length: " << libvlc_media_get_duration(that->media) << " ms" << std::endl;
-
     glBindFramebuffer(GL_FRAMEBUFFER, that->fbo[that->idxRender]);
 
     render_cfg->opengl_format = GL_RGBA;
@@ -100,6 +86,13 @@ bool ofxVlcPlayer::resize(void* data, const libvlc_video_render_cfg_t* cfg, libv
     render_cfg->primaries = libvlc_video_primaries_BT709;
     render_cfg->transfer = libvlc_video_transfer_func_SRGB;
     render_cfg->orientation = libvlc_video_orient_top_left;
+    
+    that->videoWidth = cfg->width;
+    that->videoHeight = cfg->height;
+    that->texture.allocate(that->videoWidth, that->videoHeight, GL_RGBA);
+    that->texture.getTextureData().bFlipTexture = true;
+    std::cout << "Video size: " << that->videoWidth << " * " << that->videoHeight << std::endl;
+    std::cout << "Video length: " << libvlc_media_get_duration(that->media) << " ms" << std::endl;
 
     return true;
 }
