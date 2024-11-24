@@ -137,12 +137,14 @@ ofTexture& ofxVlcPlayer::getTexture() {
     return texture;
 }
 
-void ofxVlcPlayer::draw(float x, float y, float w, float h) {
-    texture.draw(x, y, w, h);
+void ofxVlcPlayer::draw(float x, float y) {
+    ofSetColor(255);
+    texture.draw(x, y);
 }
 
-void ofxVlcPlayer::draw(float x, float y) {
-    texture.draw(x, y);
+void ofxVlcPlayer::draw(float x, float y, float w, float h) {
+    ofSetColor(255);
+    texture.draw(x, y, w, h);
 }
 
 void ofxVlcPlayer::play() {
