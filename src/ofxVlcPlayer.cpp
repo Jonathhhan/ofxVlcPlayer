@@ -33,8 +33,22 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
     // Define the opengl rendering callbacks
     libvlc_video_set_output_callbacks(mediaPlayer, libvlc_video_engine_opengl, setup, cleanup, nullptr, resize, swap, make_current, get_proc_address, nullptr, nullptr, this);
 
+    libvlc_audio_set_callbacks(mediaPlayer, play, nullptr, nullptr, nullptr, nullptr, nullptr);
+    libvlc_audio_play_cb;
+    libvlc_audio_pause_cb;
+    libvlc_audio_resume_cb;
+    libvlc_audio_flush_cb;
+    libvlc_audio_drain_cb;
     eventManager = libvlc_media_player_event_manager(mediaPlayer);
     libvlc_event_attach(eventManager, libvlc_MediaPlayerStopping, vlcEventStatic, this);
+}
+
+void ofxVlcPlayer::play(void* data, const void* samples, unsigned int count, int64_t pts) {
+    std::cout << count << std::endl;
+    const char* s;
+    s = "001010010100010101001";
+    samples = &s;
+    ofxVlcPlayer* that = static_cast<ofxVlcPlayer*>(data);
 }
 
 // This callback is called during initialisation
@@ -63,6 +77,7 @@ bool ofxVlcPlayer::resize(void* data, const libvlc_video_render_cfg_t* cfg, libv
 
     glGenTextures(3, that->tex);
     glGenFramebuffers(3, that->fbo);
+
     for (int i = 0; i < 3; i++) {
         glBindTexture(GL_TEXTURE_2D, that->tex[i]);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, cfg->width, cfg->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
@@ -70,14 +85,27 @@ bool ofxVlcPlayer::resize(void* data, const libvlc_video_render_cfg_t* cfg, libv
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
         glBindFramebuffer(GL_FRAMEBUFFER, that->fbo[i]);
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, that->tex[i], 0);
     }
     glBindTexture(GL_TEXTURE_2D, 0);
+
     GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
     if (status != GL_FRAMEBUFFER_COMPLETE) {
         return false;
     }
+
+    that->videoWidth = cfg->width;
+    that->videoHeight = cfg->height;
+
+    that->texture.allocate(that->videoWidth, that->videoHeight, GL_RGBA);
+    that->texture.getTextureData().bFlipTexture = true;
+    
+    std::cout << "Video size: " << that->videoWidth << " * " << that->videoHeight << std::endl;
+    std::cout << "Video length: " << libvlc_media_get_duration(that->media) << " ms" << std::endl;
+
     glBindFramebuffer(GL_FRAMEBUFFER, that->fbo[that->idxRender]);
 
     render_cfg->opengl_format = GL_RGBA;
@@ -86,13 +114,6 @@ bool ofxVlcPlayer::resize(void* data, const libvlc_video_render_cfg_t* cfg, libv
     render_cfg->primaries = libvlc_video_primaries_BT709;
     render_cfg->transfer = libvlc_video_transfer_func_SRGB;
     render_cfg->orientation = libvlc_video_orient_top_left;
-    
-    that->videoWidth = cfg->width;
-    that->videoHeight = cfg->height;
-    that->texture.allocate(that->videoWidth, that->videoHeight, GL_RGBA);
-    that->texture.getTextureData().bFlipTexture = true;
-    std::cout << "Video size: " << that->videoWidth << " * " << that->videoHeight << std::endl;
-    std::cout << "Video length: " << libvlc_media_get_duration(that->media) << " ms" << std::endl;
 
     return true;
 }
@@ -137,14 +158,14 @@ ofTexture& ofxVlcPlayer::getTexture() {
     return texture;
 }
 
-void ofxVlcPlayer::draw(float x, float y) {
-    ofSetColor(255);
-    texture.draw(x, y);
-}
-
 void ofxVlcPlayer::draw(float x, float y, float w, float h) {
     ofSetColor(255);
     texture.draw(x, y, w, h);
+}
+
+void ofxVlcPlayer::draw(float x, float y) {
+    ofSetColor(255);
+    texture.draw(x, y);
 }
 
 void ofxVlcPlayer::play() {
@@ -218,6 +239,7 @@ void ofxVlcPlayer::vlcEventStatic(const libvlc_event_t* event, void* data) {
 void ofxVlcPlayer::vlcEvent(const libvlc_event_t* event) {
     if (event->type == libvlc_MediaPlayerStopping) {
         if (isLooping) {
+            // play();
         }
     }
 }

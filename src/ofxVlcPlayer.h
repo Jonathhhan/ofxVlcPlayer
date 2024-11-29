@@ -2,8 +2,11 @@
 
 #include "ofMain.h"
 #include "vlc/vlc.h"
+#include "projectM-4/projectM.h"
+#include "projectM-4/playlist.h"
 
 class ofxVlcPlayer {
+    projectm_handle projectMHandle;
     libvlc_instance_t* libvlc;
     libvlc_media_t* media;
     libvlc_media_player_t* mediaPlayer;
@@ -30,6 +33,8 @@ class ofxVlcPlayer {
     static bool make_current(void* data, bool current);
     static void* get_proc_address(void* data, const char* current);
 
+    static void play(void* data, const void* samples, unsigned int count, int64_t pts);
+
     // VLC Event callbacks
     static void vlcEventStatic(const libvlc_event_t* event, void* data);
     void vlcEvent(const libvlc_event_t* event);
@@ -40,8 +45,8 @@ public:
     void load(std::string name, int vlc_argc, char const* vlc_argv[]);
     void update();
     ofTexture& getTexture();
-    void draw(float x, float y);
     void draw(float x, float y, float w, float h);
+    void draw(float x, float y);
     void play();
     void pause();
     void stop();
