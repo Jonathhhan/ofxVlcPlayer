@@ -15,15 +15,15 @@ void ofApp::setup() {
 	settings.setOutDevice(devices[2]);
 	settings.setOutListener(this);
 	// Change the sample rate to the rate and output channels to the channel number of the file that you want to play!
-	settings.sampleRate = 44100;
+	settings.sampleRate = 48000;
 	settings.numOutputChannels = 2;
 	settings.numInputChannels = 0;
-	settings.bufferSize = 128;
+	settings.bufferSize = 256;
 	soundStream.setup(settings);
 
 	char const* vlc_argv[] = { "" };
 	int vlc_argc = sizeof(vlc_argv) / sizeof(*vlc_argv);
-	player.load("data/Shakolin - Wordless @ Club Der Visionaere - 01.08.2017.mp3", vlc_argc, vlc_argv);
+	player.load("https://acidpauli.pushtopull.org/files/FC-Shuttle/FC%20Shuttle%201303.MP3", vlc_argc, vlc_argv);
 	player.setLoop(true);
 	player.play();
 }
