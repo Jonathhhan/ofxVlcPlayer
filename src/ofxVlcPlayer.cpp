@@ -29,8 +29,8 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
         videoWidth = 1280;
         videoHeight = 720;
     }
-    std::cout << "Video size: " << videoWidth << " * " << videoHeight << std::endl;
-    std::cout << "Video length: " << libvlc_media_get_duration(media) << " ms" << std::endl;
+    std::cout << "video size: " << videoWidth << " * " << videoHeight << std::endl;
+    std::cout << "video length in ms: " << libvlc_media_get_duration(media) << std::endl;
 
     libvlc_video_set_callbacks(mediaPlayer, lockStatic, NULL, NULL, this);
     libvlc_video_set_format(mediaPlayer, "RGBA", videoWidth, videoHeight, videoWidth * 4);
