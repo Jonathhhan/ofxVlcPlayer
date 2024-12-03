@@ -18,7 +18,7 @@ void ofApp::setup() {
 	settings.sampleRate = 44100;
 	settings.numOutputChannels = 2;
 	settings.numInputChannels = 0;
-	settings.bufferSize = 265;
+	settings.bufferSize = 256;
 	soundStream.setup(settings);
 
 	char const* vlc_argv[] = { "" };
