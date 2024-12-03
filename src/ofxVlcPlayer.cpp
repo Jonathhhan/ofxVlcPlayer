@@ -48,7 +48,7 @@ void ofxVlcPlayer::play(void* data, const void* samples, unsigned int count, int
     ofxVlcPlayer* that = static_cast<ofxVlcPlayer*>(data);
     if (that->ringBufferSize != count) {
         that->ringBufferSize = count;
-        that->ringBuffer.allocate(count * 4);
+        that->ringBuffer.allocate(count * 8);
     }
     // std::cout << "sample size : " << count << ", pts: " << pts << std::endl;
     if (libvlc_media_player_get_position(that->mediaPlayer) > 0) {
