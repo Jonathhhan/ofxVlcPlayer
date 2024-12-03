@@ -6,14 +6,10 @@ void ofApp::setup() {
 	cam.setPosition(0, 0, 200);
 	projectM.load();
 	projectM.setWindowSize(1024, 1024);
-    ofSetWindowTitle("ofxVlcPlayerSimpleExample");
-    ofSetFrameRate(60);
-    char const* vlc_argv[] = { "" };
-    int vlc_argc = sizeof(vlc_argv) / sizeof(*vlc_argv);
-    player.load("data/Shakolin - Wordless @ Club Der Visionaere - 01.08.2017.mp3", vlc_argc, vlc_argv);
-    player.setLoop(true);
-	soundStream.printDeviceList();
+	ofSetWindowTitle("ofxVlcPlayerSimpleExample");
+	ofSetFrameRate(60);
 
+	soundStream.printDeviceList();
 	ofSoundStreamSettings settings;
 	auto devices = soundStream.getDeviceList();
 	settings.setOutDevice(devices[2]);
@@ -24,6 +20,12 @@ void ofApp::setup() {
 	settings.numInputChannels = 0;
 	settings.bufferSize = 265;
 	soundStream.setup(settings);
+
+	char const* vlc_argv[] = { "" };
+	int vlc_argc = sizeof(vlc_argv) / sizeof(*vlc_argv);
+	player.load("data/Shakolin - Wordless @ Club Der Visionaere - 01.08.2017.mp3", vlc_argc, vlc_argv);
+	player.setLoop(true);
+	player.play();
 }
 
 //--------------------------------------------------------------
@@ -35,14 +37,14 @@ void ofApp::audioOut(ofSoundBuffer& buffer1) {
 
 //--------------------------------------------------------------
 void ofApp::update() {
-    player.update();
+	player.update();
 	projectM.update();
 	projectM.audio(player.audioData);
 }
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-    player.draw(0, 0, 1280, 720);
+	player.draw(0, 0, 1280, 720);
 	ofFill();
 	cam.begin();
 	projectM.bind();
@@ -54,8 +56,8 @@ void ofApp::draw() {
 
 	ofSetColor(225);
 	ofDrawBitmapString(projectM.getPresetName(), 32, 700);
-    ofDrawBitmapStringHighlight("FPS: " + ofToString(ofGetFrameRate()), 20, 20);
-    ofDrawBitmapStringHighlight("Second: " + ofToString(player.getTime() / 1000), 20, 40);
+	ofDrawBitmapStringHighlight("FPS: " + ofToString(ofGetFrameRate()), 20, 20);
+	ofDrawBitmapStringHighlight("Second: " + ofToString(player.getTime() / 1000), 20, 40);
 	ofDrawBitmapStringHighlight("Press space for play, p for pause and m for switching the projectM preset!", 20, 60);
 }
 
