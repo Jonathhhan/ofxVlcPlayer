@@ -3,7 +3,7 @@
 ofxVlcPlayer::ofxVlcPlayer()
     : libvlc(NULL), eventManager(NULL), media(NULL), mediaPlayer(NULL), ringBuffer(NULL) {
     ringBuffer.allocate(0);
-    }
+}
 
 ofxVlcPlayer::~ofxVlcPlayer() {}
 
@@ -37,7 +37,7 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
     libvlc_video_set_callbacks(mediaPlayer, lockStatic, NULL, NULL, this);
     libvlc_video_set_format(mediaPlayer, "RGBA", videoWidth, videoHeight, videoWidth * 4);
 
-	libvlc_audio_set_callbacks(mediaPlayer, play, nullptr, nullptr, nullptr, nullptr, this);
+    libvlc_audio_set_callbacks(mediaPlayer, play, nullptr, nullptr, nullptr, nullptr, this);
     libvlc_audio_set_format_callbacks(mediaPlayer, setup, cleanup);
 
     eventManager = libvlc_media_player_event_manager(mediaPlayer);
@@ -47,13 +47,13 @@ void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) 
 }
 
 void ofxVlcPlayer::play(void* data, const void* samples, unsigned int count, int64_t pts) {
-	ofxVlcPlayer * that = static_cast<ofxVlcPlayer *>(data);
+    ofxVlcPlayer* that = static_cast<ofxVlcPlayer*>(data);
     if (that->ringBufferSize != count) {
         that->ringBufferSize = count;
         that->ringBuffer.allocate(count * 4);
     }
-	// std::cout << "sample size : " << count << ", pts: " << pts << std::endl;
-    short* sampleArray = (short*)samples; 
+    // std::cout << "sample size : " << count << ", pts: " << pts << std::endl;
+    short* sampleArray = (short*)samples;
     for (int i = 0; i < count * 2; i++) {
         that->audioData[i] = ofMap(sampleArray[i], -32768, 32768, -1, 1);
     }
