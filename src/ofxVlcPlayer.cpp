@@ -3,7 +3,10 @@
 ofxVlcPlayer::ofxVlcPlayer()
     : libvlc(NULL), eventManager(NULL), media(NULL), mediaPlayer(NULL), ringBuffer(NULL) {}
 
-ofxVlcPlayer::~ofxVlcPlayer() {}
+ofxVlcPlayer::~ofxVlcPlayer() {
+    libvlc_media_player_release(mediaPlayer);
+    libvlc_media_release(media);
+}
 
 void ofxVlcPlayer::load(std::string name, int vlc_argc, char const* vlc_argv[]) {
     libvlc = libvlc_new(vlc_argc, vlc_argv);
