@@ -51,12 +51,14 @@ void ofxVlcPlayer::play(void* data, const void* samples, unsigned int count, int
         that->ringBuffer.allocate(count * 4);
     }
     // std::cout << "sample size : " << count << ", pts: " << pts << std::endl;
-    short* sampleArray = (short*)samples;
-    for (int i = 0; i < count * 2; i++) {
-        that->audioData[i] = ofMap(sampleArray[i], -32768, 32768, -1, 1);
+    if (libvlc_media_player_get_position(that->mediaPlayer) > 0) {
+        short* sampleArray = (short*)samples;
+        for (int i = 0; i < count * 2; i++) {
+            that->audioData[i] = ofMap(sampleArray[i], -32768, 32768, -1, 1);
+        }
+        that->buffer.copyFrom(that->audioData, count, that->channels, that->sampleRate);
+        that->ringBuffer.writeFromBuffer(that->buffer);
     }
-    that->buffer.copyFrom(that->audioData, count, that->channels, that->sampleRate);
-    that->ringBuffer.writeFromBuffer(that->buffer);
 }
 
 int ofxVlcPlayer::setup(void** data, char* format, unsigned int* rate, unsigned int* channels) {
