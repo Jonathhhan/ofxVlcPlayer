@@ -14,23 +14,23 @@ class ofxVlcPlayer {
 
     int videoWidth = 0;
     int videoHeight = 0;
+    int ringBufferSize = 0;
+    int channels = 0;
+    int sampleRate = 0;
     bool isLooping = false;
 
     // VLC Video callbaks
     static void* lockStatic(void* data, void** p_pixels);
     void* lock(void** p_pixels);
 
-	static void play(void * data, const void * samples, unsigned int count, int64_t pts);
+    // VLC Video callbaks
+    static void play(void* data, const void* samples, unsigned int count, int64_t pts);
     static int setup(void** data, char* format, unsigned int* rate, unsigned int* channels);
     static void cleanup(void* data);
+
     // VLC Event callbacks
     static void vlcEventStatic(const libvlc_event_t* event, void* data);
     void vlcEvent(const libvlc_event_t* event);
-
-    int ringBufferSize = 0;
-    int channels = 0;
-    int sampleRate = 0;
-    
 
 public:
     ofxVlcPlayer();
@@ -60,7 +60,7 @@ public:
     int getTotalNumFrames();
     void setVolume(int volume);
     void toggleMute();
-    float audioData[10000] = {0};
+    float audioData[10000] = { 0 };
     LockFreeRingBuffer ringBuffer;
     ofSoundBuffer buffer;
 };
