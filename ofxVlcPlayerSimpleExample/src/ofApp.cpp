@@ -21,7 +21,7 @@ void ofApp::setup() {
 	settings.bufferSize = 128;
 	soundStream.setup(settings);
 
-	char const* vlc_argv[] = { "" };
+	char const* vlc_argv[] = { "--input-repeat=100" };
 	int vlc_argc = sizeof(vlc_argv) / sizeof(*vlc_argv);
 	player.load("", vlc_argc, vlc_argv);
 	player.setLoop(true);
