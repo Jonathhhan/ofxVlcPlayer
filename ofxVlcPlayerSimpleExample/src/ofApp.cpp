@@ -2,6 +2,7 @@
 
 //--------------------------------------------------------------
 void ofApp::setup() {
+	ofBackground(30, 100, 145);
 	ofDisableArbTex();
 	cam.setPosition(0, 0, 200);
 	projectM.load();
@@ -44,8 +45,6 @@ void ofApp::update() {
 
 //--------------------------------------------------------------
 void ofApp::draw() {
-	player.draw(0, 0, 1280, 720);
-	ofFill();
 	cam.begin();
 	projectM.bind();
 	ofEnableDepthTest();
