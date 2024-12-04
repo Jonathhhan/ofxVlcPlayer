@@ -55,9 +55,9 @@ void ofApp::draw() {
 
 	ofSetColor(225);
 	ofDrawBitmapString(projectM.getPresetName(), 32, 700);
-	ofDrawBitmapStringHighlight("FPS: " + ofToString(ofGetFrameRate()), 20, 20);
-	ofDrawBitmapStringHighlight("Second: " + ofToString(player.getTime() / 1000), 20, 40);
-	ofDrawBitmapStringHighlight("Press space for play, p for pause and m for switching the projectM preset!", 20, 60);
+	ofDrawBitmapString("FPS: " + ofToString(ofGetFrameRate()), 20, 20);
+	ofDrawBitmapString("Second: " + ofToString(player.getTime() / 1000), 20, 40);
+	ofDrawBitmapString("Press space for play, p for pause and m for switching the projectM preset!", 20, 60);
 }
 
 //--------------------------------------------------------------
