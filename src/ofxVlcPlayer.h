@@ -60,6 +60,7 @@ public:
     int getTotalNumFrames();
     void setVolume(int volume);
     void toggleMute();
+    void close();
     float audioData[10000] = { 0 };
     LockFreeRingBuffer ringBuffer;
     ofSoundBuffer buffer;
