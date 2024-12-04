@@ -38,8 +38,8 @@ void ofApp::audioOut(ofSoundBuffer& buffer1) {
 //--------------------------------------------------------------
 void ofApp::update() {
 	player.update();
-	projectM.update();
 	projectM.audio(player.audioData);
+	projectM.update();
 }
 
 //--------------------------------------------------------------
