@@ -199,3 +199,8 @@ void* ofxVlcPlayer::lock(void** p_pixels) {
     *p_pixels = image.getPixels().getData();
     return NULL;
 }
+
+void ofxVlcPlayer::close() {
+    libvlc_media_player_release(mediaPlayer);
+    libvlc_media_release(media);
+}
